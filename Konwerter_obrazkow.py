@@ -15,13 +15,18 @@ class Konwerter:
         self.main()
     def main(self):
         h_px, w_px, _ = self.open_img_cv2.shape
-        h_pola, w_pola = self.przeliczenie_px_na_pola(h_px,w_px)
+        h_pola, w_pola, do_szerkosci = self.przeliczenie_px_na_pola(h_px,w_px)
 
         dopasowny_obrazek_cv2 = cv2.resize(self.open_img_cv2, (h_pola,w_pola), interpolation=cv2.INTER_AREA)
         rgb_cv2 = cv2.cvtColor(dopasowny_obrazek_cv2, cv2.COLOR_BGR2RGB)
         macierz_obrazka = self.konwersja_kolorow_macierzy(rgb_cv2.tolist())
 
-
+        self.rysowanie(macierz_obrazka)
+    def rysowanie(self,szerokosc_mm,wysokosci_mm,wielkosc_pola_mm):
+        szerokosc_px = int(szerokosc_mm * 11,81)
+        wysokosci_px = int(wysokosci_mm * 11,81)
+        plotno = np.ones((wysokosci_px, szerokosc_px, 3), dtype=np.uint8) * 255
+        #TODO zamiast tworzyc na macierzy glownej stworz macierz obrazka i naloz ja
     def konwersja_kolorow_macierzy(self,macierz):
         macierz_pola = []
         for x in macierz:
@@ -41,6 +46,7 @@ class Konwerter:
     def przeliczenie_px_na_pola(self, h_px, w_px):
         skala_kartki = self.wysokosci_mm/self.szerokosc_mm
         skala_obrazka = h_px/w_px
+        do_szerokosci = False
         if skala_obrazka == skala_kartki:
             wysokosc = int(self.wysokosci_mm/self.wielkosc_pola_mm)
             szerokosc = int(self.szerokosc_mm/self.wielkosc_pola_mm)
@@ -52,6 +58,7 @@ class Konwerter:
             szerokosc = self.szerokosc_mm/self.wielkosc_pola_mm
             wysokosc = int(szerokosc * skala_obrazka)
             szerokosc = int(szerokosc)
-        return wysokosc, szerokosc
+            do_szerokosci = True
+        return wysokosc, szerokosc, do_szerokosci
 if __name__ == '__main__':
     konwerter = Konwerter(cv2.imread("zebra.webp"), 419,600)
