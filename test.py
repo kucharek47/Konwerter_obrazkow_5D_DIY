@@ -1,0 +1,2 @@
+import Konwerter_obrazkow
+Konwerter_obrazkow.Konwerter.przeliczenie_px_na_pola()
