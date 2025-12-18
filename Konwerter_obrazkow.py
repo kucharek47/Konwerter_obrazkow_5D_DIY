@@ -22,11 +22,25 @@ class Konwerter:
         macierz_obrazka = self.konwersja_kolorow_macierzy(rgb_cv2.tolist())
 
         self.rysowanie(macierz_obrazka)
-    def rysowanie(self,szerokosc_mm,wysokosci_mm,wielkosc_pola_mm):
+    def rysowanie(self, macierz, szerokosc_mm, wysokosci_mm, wielkosc_pola_mm):
         szerokosc_px = int(szerokosc_mm * 11,81)
         wysokosci_px = int(wysokosci_mm * 11,81)
+        wielkosc_pola_mm = int(wielkosc_pola_mm * 11,81)
         plotno = np.ones((wysokosci_px, szerokosc_px, 3), dtype=np.uint8) * 255
-        #TODO zamiast tworzyc na macierzy glownej stworz macierz obrazka i naloz ja
+        x_old = 0
+        y_old = 0
+        liczenie_x = 0
+        liczenie_y = 0
+        for x in range(0,wysokosci_px,wielkosc_pola_mm):
+            for y in range(0,szerokosc_px,wielkosc_pola_mm):
+                cv2.rectangle(plotno, (x_old,y_old),(x,y), (macierz[liczenie_x][liczenie_y]["rgb"][2], macierz[liczenie_x][liczenie_y]["rgb"][1], macierz[liczenie_x][liczenie_y]["rgb"][0]),-1)
+                znak = macierz[liczenie_x][liczenie_y]["oznaczenie"]
+                #TODO dodaj przesuniecie znaku i naloz go putText
+                y_old = y
+                liczenie_y += 1
+            x_old = x
+            liczenie_x += 1
+
     def konwersja_kolorow_macierzy(self,macierz):
         macierz_pola = []
         for x in macierz:
