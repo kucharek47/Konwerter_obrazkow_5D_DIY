@@ -1,14 +1,4 @@
 {
-  "zolty": {
-    "rgb": [255,255,0],
-    "oznaczenie": "Ż"
-  },
-  "czarny": {
-    "rgb": [0,0,0],
-    "oznaczenie": "C"
-  },
-  "bialy": {
-    "rgb": [255,255,255],
-    "oznaczenie": "B"
-  }
+    "czarny": {"rgb": [0, 0, 0], "oznaczenie": "C", "ilosc": 1000},
+    "biały": {"rgb": [255, 255, 255], "oznaczenie": "B", "ilosc": 1000}
 }
