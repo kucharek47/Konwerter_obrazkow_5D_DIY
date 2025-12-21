@@ -40,6 +40,10 @@ def api_zmiana_obrazka():
     except Exception as e:
         print(e)
         return jsonify({'error': str(e)}), 500
+@app.route("/api/dodanie_diamentu", methods=["POST"])
+def api_dodanie_diament():
+    request_data = request.get_json()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=42310, debug=True)
