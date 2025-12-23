@@ -1,4 +1,4 @@
 {
-    "czarny": {"rgb": [0, 0, 0], "oznaczenie": "C", "ilosc": 1000},
-    "biały": {"rgb": [255, 255, 255], "oznaczenie": "B", "ilosc": 1000}
+    "czarny": {"id":1,"rgb": [0, 0, 0], "oznaczenie": "C", "ilosc": 1000},
+    "biały": {"id":2,"rgb": [255, 255, 255], "oznaczenie": "B", "ilosc": 1000}
 }

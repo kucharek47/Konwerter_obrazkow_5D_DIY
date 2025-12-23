@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import cv2
@@ -42,8 +44,38 @@ def api_zmiana_obrazka():
         return jsonify({'error': str(e)}), 500
 @app.route("/api/dodanie_diamentu", methods=["POST"])
 def api_dodanie_diament():
-    request_data = request.get_json()
-
+    slownik_zapytania = request.get_json()
+    with json.load(open('slownik_posiadanych_kolorow.json')) as f:
+        if f[slownik_zapytania["id"]]:
+            f[slownik_zapytania["id"]]["ilosc"] += slownik_zapytania["ilosc"]
+        else:
+            f[slownik_zapytania["id"]] = {
+                "nazwa": slownik_zapytania["nazwa"],
+                "rgb": slownik_zapytania["rgb"],
+                "oznaczenie": slownik_zapytania["oznaczenie"],
+                "ilosc": slownik_zapytania["ilosc"],
+            }
+    json.dump(f, open('slownik_posiadanych_kolorow.json', 'w', encoding='utf-8'), indent=4, ensure_ascii=False)
+@app.route("/api/edycja_diamentu", methods=["POST"])
+def api_edycja_diament():
+    slownik_zapytania = request.get_json()
+    with json.load(open('slownik_posiadanych_kolorow.json')) as f:
+        f[slownik_zapytania["id"]] = {
+            "nazwa": slownik_zapytania["nazwa"],
+            "rgb": slownik_zapytania["rgb"],
+            "oznaczenie": slownik_zapytania["oznaczenie"],
+            "ilosc": slownik_zapytania["ilosc"],
+        }
+    json.dump(f, open('slownik_posiadanych_kolorow.json', 'w', encoding='utf-8'), indent=4, ensure_ascii=False)
+@app.route("/api/odczyt_diamentu", methods=["GET"])
+def api_odczyt_diament():
+    slownik = json.load(open('slownik_posiadanych_kolorow.json',encoding='utf-8'))
+    lista = []
+    for x in slownik:
+        slownik_tmp = {}
+        slownik_tmp |= slownik[x]
+        lista.append(slownik_tmp)
+    return jsonify(lista)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=42310, debug=True)
