@@ -1,4 +1,62 @@
 {
-    "czarny": {"id":1,"rgb": [0, 0, 0], "oznaczenie": "C", "ilosc": 1000},
-    "biały": {"id":2,"rgb": [255, 255, 255], "oznaczenie": "B", "ilosc": 1000}
+    "czarny": {
+        "id": 1,
+        "rgb": [
+            0,
+            0,
+            0
+        ],
+        "oznaczenie": "C",
+        "ilosc": 0
+    },
+    "biały": {
+        "id": 2,
+        "rgb": [
+            255,
+            255,
+            255
+        ],
+        "oznaczenie": "B",
+        "ilosc": 0
+    },
+    "asd": {
+        "id": "asd",
+        "rgb": [
+            0,
+            68,
+            0
+        ],
+        "oznaczenie": "as",
+        "ilosc": 891
+    },
+    "pomaranczowy": {
+        "id": "123",
+        "rgb": [
+            243,
+            156,
+            0
+        ],
+        "oznaczenie": "AA",
+        "ilosc": 123
+    },
+    "asdd": {
+        "id": "dsa",
+        "rgb": [
+            0,
+            147,
+            0
+        ],
+        "oznaczenie": "sa",
+        "ilosc": 0
+    },
+    "123": {
+        "id": "123",
+        "rgb": [
+            0,
+            255,
+            0
+        ],
+        "oznaczenie": "21",
+        "ilosc": 123
+    }
 }

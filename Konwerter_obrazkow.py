@@ -13,7 +13,7 @@ class Konwerter:
         self.wielkosc_pola_mm = wielkosc_pola_mm
         self.slownik_posiadanych_kolorow = json.load(open("slownik_posiadanych_kolorow.json",encoding="utf-8"))
         self.potrzebne = {}
-        self.path_zapisu = path_zapisu or "static/wygenerowane/" + "".join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=30)) + ".png"
+        self.path_zapisu = path_zapisu or "".join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=30)) + ".png"
         try:
             self.status_dzialania = True
             self.main()
@@ -70,7 +70,7 @@ class Konwerter:
             liczenie_y = 0
             x_old = x
             liczenie_x += 1
-        cv2.imwrite(self.path_zapisu, plotno)
+        cv2.imwrite("static/wygenerowane/" + self.path_zapisu, plotno)
 
     def konwersja_kolorow_macierzy(self,macierz):
         macierz_pola = []
