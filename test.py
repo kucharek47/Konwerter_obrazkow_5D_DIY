@@ -1,2 +1,4 @@
-import Konwerter_obrazkow
-Konwerter_obrazkow.Konwerter.przeliczenie_px_na_pola()
+
+from sqlalchemy import create_engine
+
+engine = create_engine("sqlite:///baza_diamentow.db", echo=True)
