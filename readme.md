@@ -41,6 +41,10 @@ Zamiast standardowego podejścia desktopowego (np. PyQt/Tkinter), zdecydowano si
 
 Aplikacja składa się z dwóch modułów, które w środowisku deweloperskim uruchamiane są niezależnie. Docelowo mogą być zbudowane do jednego pliku wykonywalnego.
 
+login i haslo testowe
+github@test.test
+test
+
 ### 1. Silnik (Python)
 ```bash
 # Aktywacja środowiska i instalacja zależności

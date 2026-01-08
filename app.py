@@ -1,9 +1,13 @@
+import datetime
 import os
 from flask import Flask, request, jsonify
 from functools import wraps
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import Konwerter_obrazkow
+
+plik_do_zapisu_odwiedzajacych = open("odwiedzajacy","a",encoding="utf-8")
+
 app = Flask(__name__, static_folder=None)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///baza.db'
@@ -15,21 +19,48 @@ db = SQLAlchemy(app)
 os.makedirs(app.config["WYNIKI_GENEROWANIA"], exist_ok=True)
 
 #NOTE baza danych
-class User(db.Model):
+class User(db.Model): #lazy dinamic
     __tablename__ = 'user'
+
     id = db.Column(db.Integer, primary_key=True)
-    sha = db.Column(db.String(64), nullable=False)
+
+    dostep = db.relationship('Dostep', backref='user', lazy='dynamic')
+    info = db.relationship('Info', backref='user', lazy='dynamic')
     posiadane = db.relationship('Posiade', backref='user', lazy='dynamic')
+
+class Dostep(db.Model):
+    __tablename__ = 'dostep'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    nazwa = db.Column(db.String(50))
+    sha = db.Column(db.String(64), nullable=False)
 class Posiade(db.Model):
     __tablename__ = 'posiade'
+
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
     id_koloru = db.Column(db.Integer, db.ForeignKey('diamenty.id'))
     ilosc = db.Column(db.Integer, nullable=False)
+class Info(db.Model): #Zignorowac czesc stworzona do zabawy/lepszego zrozumienia baz danych
+    __tablename__ = 'info'
+
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    diament = db.relationship('Diamenty', backref='posiade', lazy='dynamic')
+
+    miasto = db.Column(db.String(50))
+    kod_pocztowy = db.Column(db.String(7))
+    ulica = db.Column(db.String(50))
+    numer_domu = db.Column(db.Integer)
+    numer_lokalu = db.Column(db.Integer)
+
 class Diamenty(db.Model):
     __tablename__ = 'diamenty'
+
     id = db.Column(db.Integer, primary_key=True)
+
     r = db.Column(db.Integer, nullable=False)
     g = db.Column(db.Integer, nullable=False)
     b = db.Column(db.Integer, nullable=False)
@@ -46,12 +77,13 @@ def wymagane_sha(f):
         if not sha_cookie:
             return jsonify({"error": "Brak autoryzacji (brak ciasteczka)"}), 401
 
-        user = User.query.filter_by(sha=sha_cookie).first()
+        dostep_j = Dostep.query.filter_by(sha=sha_cookie).first()
 
-        if not user:
+        if not dostep_j:
             return jsonify({"error": "Brak autoryzacji (nieznany uzytkownik)"}), 401
+        id_user = dostep_j.user_id
 
-        return f(user_db=user, *args, **kwargs)
+        return f(id_user=id_user, *args, **kwargs)
 
     return sha
 
@@ -60,7 +92,9 @@ def wymagane_sha(f):
 def api_test_sha():
     sha = request.json.get('sha',False)
     if sha:
-        if User.query.filter_by(sha=sha).first():
+        dostep = Dostep.query.filter_by(sha=sha).first()
+        if dostep:
+            plik_do_zapisu_odwiedzajacych.write(f"{dostep.nazwa} | {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             return jsonify({"status": "ok"}), 200
         else:
             return jsonify({"error": "brak sha w bazie"}), 401
@@ -68,24 +102,25 @@ def api_test_sha():
         return jsonify({"error":"brak sha"}), 401
 
 
-@app.route("api/pobranie_kolorow_posiadanych", methods=['GET'])
+@app.route("/api/pobranie_kolorow_posiadanych", methods=['GET'])
 @wymagane_sha
-def api_pobranie_kolorow_posiadanych(db_user):
-    posiadane = db_user.posiadane.all()
-    lista = []
-    for x in posiadane:
-        lista.append({
-            "id": x.id,
-            "id_koloru": x.id_koloru,
-            "ilosc": x.ilosc,
-            "rgb": [x.diament.r, x.diament.g, x.diament.b],
-            "nazwa": x.diament.nazwa,
-            "oznaczenie": x.diament.oznaczenie,
-        })
-    return jsonify(lista), 200
+def api_pobranie_kolorow_posiadanych(id_user):
+    dane = Posiade.query.filter_by(user_id=id_user).all()
+    slownik = {}
+    for x in dane:
+        slownik[x.id_koloru] =  {
+            "ilosc": x.ilosc
+        }
+    kolor = Diamenty.query.filter(Diamenty.id.in_(list(slownik.keys()))).all()
+    for x in kolor:
+        slownik[x.id_koloru]["nazwa"] = x.nazwa
+        slownik[x.id_koloru]["oznaczenie"] = x.oznaczenie
+        slownik[x.id_koloru]["rgb"] = [x.r,x.g,x.b]
+
+    return jsonify(slownik), 200
 @app.route('/api/pobranie_kolorow', methods=['POST'])
 @wymagane_sha
-def api_pobranie_kolorow(db_user):
+def api_pobranie_kolorow(id_user):
     diamenty = Diamenty.query.all()
     lista = []
     for x in diamenty:
