@@ -113,12 +113,13 @@ def api_pobranie_kolorow_posiadanych(id_user):
         }
     kolor = Diamenty.query.filter(Diamenty.id.in_(list(slownik.keys()))).all()
     for x in kolor:
-        slownik[x.id_koloru]["nazwa"] = x.nazwa
-        slownik[x.id_koloru]["oznaczenie"] = x.oznaczenie
-        slownik[x.id_koloru]["rgb"] = [x.r,x.g,x.b]
+        if x.id in slownik:
+            slownik[x.id]["nazwa"] = x.nazwa
+            slownik[x.id]["oznaczenie"] = x.oznaczenie
+            slownik[x.id]["rgb"] = [x.r, x.g, x.b]
 
     return jsonify(slownik), 200
-@app.route('/api/pobranie_kolorow', methods=['POST'])
+@app.route("/api/pobranie_kolorow", methods=['POST'])
 @wymagane_sha
 def api_pobranie_kolorow(id_user):
     diamenty = Diamenty.query.all()
@@ -131,3 +132,69 @@ def api_pobranie_kolorow(id_user):
             "oznaczenie": x.oznaczenie,
         })
     return jsonify(lista), 200
+@app.route("/api/wszystkie_diamenty", methods=['GET'])
+@wymagane_sha
+def api_wszystkie_diamenty(id_user):
+    dane = Diamenty.query.all()
+    lista = []
+    for x in dane:
+        lista.append({
+            "id": x.id,
+            "rgb": [x.r, x.g, x.b],
+            "nazwa": x.nazwa,
+            "oznaczenie": x.oznaczenie,
+        })
+    return jsonify(lista), 200
+@app.route("/api/odczyt_diamentu", methods=['GET'])
+@wymagane_sha
+def api_odczyt_diamentu(id_user):
+    dane_posiadanych = Posiade.query.filter_by(user_id=id_user).all()
+
+    lista = []
+    for x in dane_posiadanych:
+        y = Diamenty.query.filter_by(id=x.id_koloru).first()
+        if y:
+            lista.append({
+                "id": x.id_koloru,
+                "ilosc": x.ilosc,
+                "rgb": [y.r, y.g, y.b],
+                "nazwa": y.nazwa,
+                "oznaczenie": y.oznaczenie,
+            })
+        else:
+            lista.append({
+                "id": x.id_koloru,
+                "ilosc": x.ilosc,
+            })
+    return jsonify(lista), 200
+@app.route("/api/zapis_diamentu", methods=['POST'])
+@wymagane_sha
+def api_zapis_diamentu(id_user):
+    dane = request.json.get('dane',False)
+    if dane:
+        diament_istniejacy = Diamenty.query.filter_by(id=dane["id"]).first()
+        if diament_istniejacy:
+            posiadanie = Posiade.query.filter_by(user_id=id_user, id_koloru=dane["id"]).first()
+            if posiadanie:
+                posiadanie.ilosc = dane["ilosc"]
+            else:
+                db.session.add(Posiade(id_koloru=dane["id"], ilosc=dane["ilosc"], user_id=id_user))
+
+            if Dostep.query.filter_by(user_id=id_user).first().nazwa == "ja":
+                if diament_istniejacy.r != dane["rgb"][0] or diament_istniejacy.g != dane["rgb"][1] or diament_istniejacy.b != dane["rgb"][2] or diament_istniejacy.nazwa != dane["nazwa"] or diament_istniejacy.oznaczenie != dane["oznaczenie"]:
+                    diament_istniejacy.r = dane["rgb"][0]
+                    diament_istniejacy.g = dane["rgb"][1]
+                    diament_istniejacy.b = dane["rgb"][2]
+                    diament_istniejacy.oznaczenie = dane["oznaczenie"]
+                    diament_istniejacy.nazwa = dane["nazwa"]
+            db.session.commit()
+        else:
+            dodane = Diamenty(r=dane["rgb"][0],g=dane["rgb"][1],b=dane["rgb"][2], oznaczenie=dane["oznaczenie"], nazwa=dane["nazwa"])
+            db.session.add(dodane)
+            db.session.flush()
+
+            db.session.add(Posiade(id_koloru=dodane.id, ilosc=dane["ilosc"], user_id=id_user))
+            db.session.commit()
+        return jsonify({"ok": True}), 200
+    else:
+        return jsonify({"error":"błąd danych"}), 403
